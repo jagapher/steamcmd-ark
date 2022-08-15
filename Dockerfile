@@ -13,20 +13,18 @@ ENV ARKSERVERNAME="Change me"
 ENV ARKSERVERPASS="Change me"
 ENV ARKSERVERADMINPASS="Change me"
 
-# copy update script
-COPY --chmod=777 ["update.sh", "${HOMEDIR}/"]
-
-# run update.sh as a layer because that will create a base image with the server files installed
-RUN ${HOMEDIR}/update.sh
-
 # copy entry script
-COPY --chmod=777 ["entry.sh", "${HOMEDIR}/"]
-
-# add volume connector to the saved game folder
-VOLUME "${STEAMAPPDIR}/ShooterGame/Saved"
+COPY ["entry.sh", "${HOMEDIR}/"]
 
 # change working directory for some reason
 WORKDIR ${HOMEDIR}
+
+RUN set -x \
+	&& mkdir -p ${STEAMAPPDIR} \
+	&& chmod +x "${HOMEDIR}/entry.sh" \
+	&& chown -R "${USER}:${USER}" "${HOMEDIR}/entry.sh" "${STEAMAPPDIR}"
+
+USER ${USER}
 
 # expose our ports!
 EXPOSE ${ARKQUERYPORT}/UDP
